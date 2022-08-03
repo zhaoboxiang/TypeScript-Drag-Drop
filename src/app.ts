@@ -189,6 +189,7 @@ class ProjectItem
     this.renderContent();
   }
 
+  @AutoBind
   dragStartHandler(event: DragEvent): void {
     console.log(event);
   }
@@ -210,7 +211,10 @@ class ProjectItem
 }
 
 // ProjectList class
-class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+class ProjectList
+  extends Component<HTMLDivElement, HTMLElement>
+  implements DragTarget
+{
   assignedProjects: Project[] = [];
 
   constructor(private type: "active" | "finished") {
@@ -220,18 +224,25 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     this.renderContent();
   }
 
-  private renderProjects() {
-    const listEl = document.getElementById(
-      `${this.type}-projects-list`
-    )! as HTMLUListElement;
+  @AutoBind
+  dragOverHandler(_: DragEvent): void {
+    const listEl = this.element.querySelector("ul")!;
+    listEl.classList.add("droppable");
+  }
 
-    listEl.innerHTML = "";
-    for (const prjItem of this.assignedProjects) {
-      new ProjectItem(this.element.querySelector("ul")!.id, prjItem);
-    }
+  dropHanler(_: DragEvent): void {}
+
+  @AutoBind
+  dragLeaveHandler(_: DragEvent): void {
+    const listEl = this.element.querySelector("ul")!;
+    listEl.classList.remove("droppable");
   }
 
   configure() {
+    this.element.addEventListener("dragover", this.dragOverHandler);
+    this.element.addEventListener("drop", this.dropHanler);
+    this.element.addEventListener("dragleave", this.dragLeaveHandler);
+
     projectState.addListeners((projects: Project[]) => {
       const relevantProjects = projects.filter((prj) => {
         if (this.type === "active") {
@@ -250,6 +261,17 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     this.element.querySelector(
       "h2"
     )!.textContent = `${this.type.toUpperCase()} PROJECT`;
+  }
+
+  private renderProjects() {
+    const listEl = document.getElementById(
+      `${this.type}-projects-list`
+    )! as HTMLUListElement;
+
+    listEl.innerHTML = "";
+    for (const prjItem of this.assignedProjects) {
+      new ProjectItem(this.element.querySelector("ul")!.id, prjItem);
+    }
   }
 }
 
