@@ -6,7 +6,7 @@ interface Draggable {
 
 interface DragTarget {
   dragOverHandler(event: DragEvent): void;
-  dropHanler(event: DragEvent): void;
+  dropHandler(event: DragEvent): void;
   dragLeaveHandler(event: DragEvent): void;
 }
 
@@ -191,7 +191,8 @@ class ProjectItem
 
   @AutoBind
   dragStartHandler(event: DragEvent): void {
-    console.log(event);
+    event.dataTransfer!.setData("text/plain", this.project.id);
+    event.dataTransfer!.effectAllowed = "move";
   }
 
   dragEndHandler(_: DragEvent): void {
@@ -225,12 +226,18 @@ class ProjectList
   }
 
   @AutoBind
-  dragOverHandler(_: DragEvent): void {
-    const listEl = this.element.querySelector("ul")!;
-    listEl.classList.add("droppable");
+  dragOverHandler(event: DragEvent): void {
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      event.preventDefault();
+
+      const listEl = this.element.querySelector("ul")!;
+      listEl.classList.add("droppable");
+    }
   }
 
-  dropHanler(_: DragEvent): void {}
+  dropHandler(event: DragEvent): void {
+    console.log(event.dataTransfer!.getData("text/plain"));
+  }
 
   @AutoBind
   dragLeaveHandler(_: DragEvent): void {
@@ -240,7 +247,7 @@ class ProjectList
 
   configure() {
     this.element.addEventListener("dragover", this.dragOverHandler);
-    this.element.addEventListener("drop", this.dropHanler);
+    this.element.addEventListener("drop", this.dropHandler);
     this.element.addEventListener("dragleave", this.dragLeaveHandler);
 
     projectState.addListeners((projects: Project[]) => {
