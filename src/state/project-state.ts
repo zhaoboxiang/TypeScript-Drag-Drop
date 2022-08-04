@@ -2,8 +2,8 @@
 
 type Linstener<T> = (items: T[]) => void;
 
-import { Project } from "../models/project.js";
-import { ProjectStatus } from "../models/project.js";
+import { Project } from "../models/project";
+import { ProjectStatus } from "../models/project";
 
 export class State<T> {
   protected listeners: Linstener<T>[] = [];
